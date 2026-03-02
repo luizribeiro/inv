@@ -5,6 +5,7 @@ use crate::error::{AppError, Result};
 
 mod add;
 mod init;
+mod ios_setup;
 mod list;
 mod qr;
 mod remove;
@@ -24,6 +25,7 @@ pub fn run(command: &Commands, db_path: &Path) -> Result<()> {
         Commands::Remove { id, yes } => remove::run(db_path, id, *yes),
         Commands::Qr { id, out } => qr::run(db_path, id, out.as_deref()),
         Commands::Validate => validate::run(db_path),
+        Commands::IosSetup { url } => ios_setup::run(url.clone()),
         _ => Err(AppError::NotImplemented(command_name(command))),
     }
 }

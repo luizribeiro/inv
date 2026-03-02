@@ -43,8 +43,6 @@ fn parses_remaining_stub_subcommands_and_returns_not_implemented() {
     let cases: &[(&[&str], &str)] = &[
         (&["label", "abc"], "label"),
         (&["label", "abc", "--json"], "label"),
-        (&["ios-setup"], "ios-setup"),
-        (&["ios-setup", "--url", "https://example.com"], "ios-setup"),
     ];
 
     for (args, expected_command) in cases {
@@ -56,4 +54,16 @@ fn parses_remaining_stub_subcommands_and_returns_not_implemented() {
                 "command '{expected_command}' is not implemented yet"
             )));
     }
+}
+
+#[test]
+fn ios_setup_subcommand_is_wired_and_no_longer_reports_not_implemented() {
+    inv_command()
+        .args(["ios-setup", "--url", "https://example.com"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains(
+            "Shortcut URL: https://example.com",
+        ))
+        .stderr(predicate::str::contains("not implemented").not());
 }

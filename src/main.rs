@@ -6,6 +6,7 @@ mod error;
 mod model;
 mod schema;
 mod storage;
+mod terminal_qr;
 
 use clap::Parser;
 
