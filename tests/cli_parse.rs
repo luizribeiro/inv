@@ -15,9 +15,20 @@ fn help_smoke_test() {
 }
 
 #[test]
-fn parses_all_subcommands_and_returns_not_implemented() {
+fn remove_subcommand_is_wired_and_no_longer_reports_not_implemented() {
+    inv_command()
+        .args(["remove", "abc", "--yes"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains(
+            "invalid item id 'abc' (expected UUID)",
+        ))
+        .stderr(predicate::str::contains("not implemented").not());
+}
+
+#[test]
+fn parses_remaining_stub_subcommands_and_returns_not_implemented() {
     let cases: &[(&[&str], &str)] = &[
-        (&["remove", "abc", "--yes"], "remove"),
         (&["qr", "abc"], "qr"),
         (&["qr", "abc", "--out", "qr.png"], "qr"),
         (&["label", "abc"], "label"),

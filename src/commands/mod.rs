@@ -6,6 +6,7 @@ use crate::error::{AppError, Result};
 mod add;
 mod init;
 mod list;
+mod remove;
 mod search;
 mod show;
 mod update;
@@ -19,6 +20,7 @@ pub fn run(command: &Commands, db_path: &Path) -> Result<()> {
         Commands::Show { id, json } => show::run(db_path, id, *json),
         Commands::List { json } => list::run(db_path, *json),
         Commands::Update { id } => update::run(db_path, id),
+        Commands::Remove { id, yes } => remove::run(db_path, id, *yes),
         Commands::Validate => validate::run(db_path),
         _ => Err(AppError::NotImplemented(command_name(command))),
     }
