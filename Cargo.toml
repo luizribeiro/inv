@@ -10,6 +10,8 @@ dialoguer = "0.11"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 jsonschema = { version = "0.18", default-features = false, features = ["draft202012"] }
+image = { version = "0.25", default-features = false, features = ["png"] }
+qrcode = "0.14"
 url = "2.5"
 uuid = { version = "1.8", features = ["serde", "v4"] }
 
