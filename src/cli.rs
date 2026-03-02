@@ -15,7 +15,10 @@ pub struct Cli {
 #[derive(Debug, Subcommand)]
 pub enum Commands {
     Init,
-    Add,
+    Add {
+        #[arg(long, help = "Read add input as a JSON object from stdin")]
+        stdin_json: bool,
+    },
     Update {
         id: String,
     },

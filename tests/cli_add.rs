@@ -1,14 +1,14 @@
 use std::fs;
 
-use assert_cmd::assert::OutputAssertExt;
+use assert_cmd::Command;
 use predicates::prelude::*;
 use tempfile::tempdir;
 use uuid::Uuid;
 
 const ADD_TEST_INPUT_ENV: &str = "INV_ADD_TEST_INPUT";
 
-fn inv_command() -> std::process::Command {
-    std::process::Command::new(env!("CARGO_BIN_EXE_inv"))
+fn inv_command() -> Command {
+    Command::new(env!("CARGO_BIN_EXE_inv"))
 }
 
 fn write_inventory(temp_dir: &tempfile::TempDir, json: &str) {
@@ -102,6 +102,45 @@ fn add_fails_when_test_input_hook_is_invalid_json() {
         .stderr(predicate::str::contains(
             "failed to parse INV_ADD_TEST_INPUT",
         ));
+}
+
+#[test]
+fn add_accepts_non_interactive_stdin_json_input() {
+    let temp = tempdir().expect("tempdir should be created");
+    write_inventory(&temp, "{\n  \"version\": 1,\n  \"items\": []\n}\n");
+
+    inv_command()
+        .current_dir(temp.path())
+        .args(["add", "--stdin-json"])
+        .write_stdin(
+            r#"{"name":"Switchcraft Jack","quantity":6,"unit":"pcs","tags":["guitar","jack"]}"#,
+        )
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Added item"))
+        .stdout(predicate::str::contains("Switchcraft Jack"));
+
+    let raw = fs::read_to_string(temp.path().join("inventory.json"))
+        .expect("inventory file should be readable after add");
+    let value: serde_json::Value = serde_json::from_str(&raw).expect("inventory should be json");
+    let item = &value["items"][0];
+    assert_eq!(item["name"], "Switchcraft Jack");
+    assert_eq!(item["quantity"], 6);
+    assert_eq!(item["tags"], serde_json::json!(["guitar", "jack"]));
+}
+
+#[test]
+fn add_stdin_json_rejects_invalid_json_payload() {
+    let temp = tempdir().expect("tempdir should be created");
+    write_inventory(&temp, "{\n  \"version\": 1,\n  \"items\": []\n}\n");
+
+    inv_command()
+        .current_dir(temp.path())
+        .args(["add", "--stdin-json"])
+        .write_stdin("{not-json")
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("failed to parse stdin JSON input"));
 }
 
 #[test]

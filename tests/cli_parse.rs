@@ -61,3 +61,12 @@ fn ios_setup_subcommand_is_wired_and_no_longer_reports_not_implemented() {
         ))
         .stderr(predicate::str::contains("not implemented").not());
 }
+
+#[test]
+fn add_help_mentions_stdin_json_flag() {
+    inv_command()
+        .args(["add", "--help"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("--stdin-json"));
+}
