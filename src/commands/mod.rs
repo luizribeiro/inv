@@ -3,8 +3,13 @@ use std::path::Path;
 use crate::cli::Commands;
 use crate::error::{AppError, Result};
 
-pub fn run(command: &Commands, _db_path: &Path) -> Result<()> {
-    Err(AppError::NotImplemented(command_name(command)))
+mod init;
+
+pub fn run(command: &Commands, db_path: &Path) -> Result<()> {
+    match command {
+        Commands::Init => init::run(db_path),
+        _ => Err(AppError::NotImplemented(command_name(command))),
+    }
 }
 
 fn command_name(command: &Commands) -> &'static str {

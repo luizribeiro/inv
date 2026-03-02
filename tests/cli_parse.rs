@@ -17,7 +17,6 @@ fn help_smoke_test() {
 #[test]
 fn parses_all_subcommands_and_returns_not_implemented() {
     let cases: &[(&[&str], &str)] = &[
-        (&["init"], "init"),
         (&["add"], "add"),
         (&["update", "abc"], "update"),
         (&["search", "resistor"], "search"),
