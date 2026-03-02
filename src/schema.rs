@@ -63,6 +63,14 @@ fn compiled_schema() -> Result<&'static JSONSchema> {
             AppError::NotImplemented(command) => AppError::Validation(format!(
                 "failed to compile embedded inventory schema while handling '{command}'"
             )),
+            AppError::Io { path, action, source } => AppError::Validation(format!(
+                "failed to compile embedded inventory schema while trying to {action} '{}': {source}",
+                path.display()
+            )),
+            AppError::JsonParse { path, source } => AppError::Validation(format!(
+                "failed to compile embedded inventory schema due to JSON parse error in '{}': {source}",
+                path.display()
+            )),
         })
 }
 
