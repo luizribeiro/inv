@@ -58,7 +58,7 @@
     cargo-fmt-check = {
       enable = true;
       name = "cargo fmt --check";
-      entry = "bash -c 'test -f Cargo.toml || exit 0; cargo fmt --check'";
+      entry = "cargo fmt --check";
       pass_filenames = false;
       always_run = true;
     };
@@ -66,7 +66,7 @@
     cargo-clippy = {
       enable = true;
       name = "cargo clippy -- -D warnings";
-      entry = "bash -c 'test -f Cargo.toml || exit 0; cargo clippy -- -D warnings'";
+      entry = "cargo clippy -- -D warnings";
       pass_filenames = false;
       always_run = true;
     };
@@ -74,7 +74,7 @@
     cargo-check = {
       enable = true;
       name = "cargo check";
-      entry = "bash -c 'test -f Cargo.toml || exit 0; cargo check'";
+      entry = "cargo check";
       pass_filenames = false;
       always_run = true;
     };
@@ -82,7 +82,7 @@
     cargo-test = {
       enable = true;
       name = "cargo test";
-      entry = "bash -c 'test -f Cargo.toml || exit 0; cargo test'";
+      entry = "cargo test";
       pass_filenames = false;
       always_run = true;
     };
