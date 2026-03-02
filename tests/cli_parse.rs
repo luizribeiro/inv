@@ -23,8 +23,6 @@ fn parses_all_subcommands_and_returns_not_implemented() {
         (&["search", "resistor", "--json"], "search"),
         (&["show", "abc"], "show"),
         (&["show", "abc", "--json"], "show"),
-        (&["list"], "list"),
-        (&["list", "--json"], "list"),
         (&["remove", "abc", "--yes"], "remove"),
         (&["qr", "abc"], "qr"),
         (&["qr", "abc", "--out", "qr.png"], "qr"),
