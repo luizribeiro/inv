@@ -9,6 +9,7 @@ pub enum AppError {
         source: String,
         reason: &'static str,
     },
+    Validation(String),
 }
 
 impl Display for AppError {
@@ -20,6 +21,7 @@ impl Display for AppError {
             Self::InvalidUrl { source, reason } => {
                 write!(f, "invalid URL '{source}': {reason}")
             }
+            Self::Validation(message) => write!(f, "validation error: {message}"),
         }
     }
 }

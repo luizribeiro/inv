@@ -1,6 +1,11 @@
+use std::collections::HashSet;
+
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use url::Url;
 use uuid::Uuid;
+
+use crate::error::{AppError, Result};
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -73,7 +78,7 @@ struct ItemWire {
 }
 
 impl<'de> Deserialize<'de> for Item {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
     {
@@ -129,6 +134,38 @@ impl Item {
     pub fn refresh_updated_at(&mut self) {
         self.updated_at = Utc::now();
     }
+}
+
+#[allow(dead_code)]
+pub fn validate_semantics(doc: &InventoryDoc) -> Result<()> {
+    let mut seen_ids = HashSet::new();
+
+    for item in &doc.items {
+        if !seen_ids.insert(item.id) {
+            return Err(AppError::Validation(format!(
+                "duplicate item id '{}'",
+                item.id
+            )));
+        }
+
+        if let Some(source_url) = &item.source_url {
+            let parsed = Url::parse(source_url).map_err(|_| {
+                AppError::Validation(format!(
+                    "item '{}' has invalid source_url '{}' (must be an absolute URL)",
+                    item.id, source_url
+                ))
+            })?;
+
+            if !matches!(parsed.scheme(), "http" | "https") {
+                return Err(AppError::Validation(format!(
+                    "item '{}' has invalid source_url '{}' (scheme must be http or https)",
+                    item.id, source_url
+                )));
+            }
+        }
+    }
+
+    Ok(())
 }
 
 fn default_version() -> u32 {
@@ -220,6 +257,75 @@ mod tests {
         item.refresh_updated_at();
 
         assert!(item.updated_at > before);
+    }
+
+    #[test]
+    fn validate_semantics_rejects_duplicate_ids() {
+        let id = Uuid::new_v4();
+        let first = Item::with_required_fields(id, "Item 1");
+        let second = Item::with_required_fields(id, "Item 2");
+        let doc = InventoryDoc {
+            version: 1,
+            items: vec![first, second],
+        };
+
+        let error = validate_semantics(&doc).expect_err("duplicate ids must fail");
+        match error {
+            AppError::Validation(message) => {
+                assert!(message.contains("duplicate item id"));
+                assert!(message.contains(&id.to_string()));
+            }
+            _ => panic!("expected validation error"),
+        }
+    }
+
+    #[test]
+    fn validate_semantics_rejects_invalid_source_url() {
+        let mut item = Item::with_required_fields(Uuid::new_v4(), "Item");
+        item.source_url = Some("not a url".to_string());
+        let doc = InventoryDoc {
+            version: 1,
+            items: vec![item],
+        };
+
+        let error = validate_semantics(&doc).expect_err("invalid source_url must fail");
+        match error {
+            AppError::Validation(message) => {
+                assert!(message.contains("source_url"));
+                assert!(message.contains("not a url"));
+            }
+            _ => panic!("expected validation error"),
+        }
+    }
+
+    #[test]
+    fn validate_semantics_rejects_non_http_source_url_scheme() {
+        let mut item = Item::with_required_fields(Uuid::new_v4(), "Item");
+        item.source_url = Some("ftp://example.com/item".to_string());
+        let doc = InventoryDoc {
+            version: 1,
+            items: vec![item],
+        };
+
+        let error = validate_semantics(&doc).expect_err("non-http(s) source_url scheme must fail");
+        match error {
+            AppError::Validation(message) => {
+                assert!(message.contains("scheme must be http or https"));
+            }
+            _ => panic!("expected validation error"),
+        }
+    }
+
+    #[test]
+    fn validate_semantics_accepts_valid_items() {
+        let mut item = Item::with_required_fields(Uuid::new_v4(), "Item");
+        item.source_url = Some("https://example.com/item".to_string());
+        let doc = InventoryDoc {
+            version: 1,
+            items: vec![item],
+        };
+
+        validate_semantics(&doc).expect("valid document should pass semantic checks");
     }
 
     #[test]
