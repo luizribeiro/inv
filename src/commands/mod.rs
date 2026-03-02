@@ -8,6 +8,7 @@ mod init;
 mod list;
 mod search;
 mod show;
+mod update;
 mod validate;
 
 pub fn run(command: &Commands, db_path: &Path) -> Result<()> {
@@ -17,6 +18,7 @@ pub fn run(command: &Commands, db_path: &Path) -> Result<()> {
         Commands::Search { query, json } => search::run(db_path, query, *json),
         Commands::Show { id, json } => show::run(db_path, id, *json),
         Commands::List { json } => list::run(db_path, *json),
+        Commands::Update { id } => update::run(db_path, id),
         Commands::Validate => validate::run(db_path),
         _ => Err(AppError::NotImplemented(command_name(command))),
     }
