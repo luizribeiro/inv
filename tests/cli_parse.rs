@@ -1,0 +1,48 @@
+use assert_cmd::assert::OutputAssertExt;
+use predicates::prelude::*;
+
+fn inv_command() -> std::process::Command {
+    std::process::Command::new(env!("CARGO_BIN_EXE_inv"))
+}
+
+#[test]
+fn help_smoke_test() {
+    inv_command()
+        .arg("--help")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Usage:"));
+}
+
+#[test]
+fn parses_all_subcommands_and_returns_not_implemented() {
+    let cases: &[(&[&str], &str)] = &[
+        (&["init"], "init"),
+        (&["add"], "add"),
+        (&["update", "abc"], "update"),
+        (&["search", "resistor"], "search"),
+        (&["search", "resistor", "--json"], "search"),
+        (&["show", "abc"], "show"),
+        (&["show", "abc", "--json"], "show"),
+        (&["list"], "list"),
+        (&["list", "--json"], "list"),
+        (&["remove", "abc", "--yes"], "remove"),
+        (&["qr", "abc"], "qr"),
+        (&["qr", "abc", "--out", "qr.png"], "qr"),
+        (&["label", "abc"], "label"),
+        (&["label", "abc", "--json"], "label"),
+        (&["validate"], "validate"),
+        (&["ios-setup"], "ios-setup"),
+        (&["ios-setup", "--url", "https://example.com"], "ios-setup"),
+    ];
+
+    for (args, expected_command) in cases {
+        inv_command()
+            .args(*args)
+            .assert()
+            .failure()
+            .stderr(predicate::str::contains(format!(
+                "command '{expected_command}' is not implemented yet"
+            )));
+    }
+}
