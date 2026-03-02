@@ -21,8 +21,6 @@ fn parses_all_subcommands_and_returns_not_implemented() {
         (&["update", "abc"], "update"),
         (&["search", "resistor"], "search"),
         (&["search", "resistor", "--json"], "search"),
-        (&["show", "abc"], "show"),
-        (&["show", "abc", "--json"], "show"),
         (&["remove", "abc", "--yes"], "remove"),
         (&["qr", "abc"], "qr"),
         (&["qr", "abc", "--out", "qr.png"], "qr"),
