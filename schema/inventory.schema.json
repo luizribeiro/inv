@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/inv/schema/inventory.schema.json",
+  "title": "Inventory document",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "items"],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "minimum": 0,
+      "default": 1
+    },
+    "items": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/item"
+      }
+    }
+  },
+  "$defs": {
+    "nullableString": {
+      "type": ["string", "null"]
+    },
+    "item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "quantity": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        },
+        "unit": {
+          "type": "string",
+          "default": "pcs"
+        },
+        "location": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "bin_size": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "supplier": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "source_url": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "format": "uri",
+              "pattern": "^https?://"
+            }
+          ]
+        },
+        "manufacturer": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "mpn": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "tags": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "string"
+          }
+        },
+        "notes": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}
