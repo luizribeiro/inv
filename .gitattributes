@@ -1,0 +1,2 @@
+# Keep inventory data as normal text so git diffs stay visible.
+inventory.json text eol=lf
