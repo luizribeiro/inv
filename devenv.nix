@@ -8,7 +8,7 @@
   packages = [ pkgs.git ];
 
   # https://devenv.sh/languages/
-  # languages.rust.enable = true;
+  languages.rust.enable = true;
 
   # https://devenv.sh/processes/
   # processes.dev.exec = "${lib.getExe pkgs.watchexec} -n -- ls -la";
@@ -38,10 +38,38 @@
   enterTest = ''
     echo "Running tests"
     git --version | grep --color=auto "${pkgs.git.version}"
+    rustc --version
+    cargo --version
+    cargo fmt --version
+    cargo clippy --version
   '';
 
   # https://devenv.sh/git-hooks/
-  # git-hooks.hooks.shellcheck.enable = true;
+  git-hooks.hooks = {
+    cargo-fmt-check = {
+      enable = true;
+      name = "cargo fmt --check";
+      entry = "bash -c 'test -f Cargo.toml || exit 0; cargo fmt --check'";
+      pass_filenames = false;
+      always_run = true;
+    };
+
+    cargo-clippy = {
+      enable = true;
+      name = "cargo clippy -- -D warnings";
+      entry = "bash -c 'test -f Cargo.toml || exit 0; cargo clippy -- -D warnings'";
+      pass_filenames = false;
+      always_run = true;
+    };
+
+    cargo-check = {
+      enable = true;
+      name = "cargo check";
+      entry = "bash -c 'test -f Cargo.toml || exit 0; cargo check'";
+      pass_filenames = false;
+      always_run = true;
+    };
+  };
 
   # See full reference at https://devenv.sh/reference/options/
 }
