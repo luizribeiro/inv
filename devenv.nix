@@ -22,6 +22,15 @@
     echo hello from $GREET
   '';
 
+  scripts.inv.exec = ''
+    if [ ! -f Cargo.toml ]; then
+      echo "Error: Cargo.toml not found in current directory." >&2
+      exit 1
+    fi
+
+    cargo run --quiet -- "$@"
+  '';
+
   # https://devenv.sh/basics/
   enterShell = ''
     hello         # Run scripts directly
