@@ -7,7 +7,7 @@ use crate::error::{AppError, Result};
 const DEFAULT_DB_PATH: &str = "./inventory.json";
 const INV_DB_PATH_ENV: &str = "INV_DB_PATH";
 const DEFAULT_IOS_SHORTCUT_URL: &str =
-    "https://www.icloud.com/shortcuts/00000000000000000000000000000000";
+    "https://www.icloud.com/shortcuts/801c0769f0184dc591d90a56b3234ccd";
 const INV_IOS_SHORTCUT_URL_ENV: &str = "INV_IOS_SHORTCUT_URL";
 
 pub fn resolve_db_path(cli_override: Option<PathBuf>) -> PathBuf {
