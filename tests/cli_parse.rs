@@ -39,21 +39,15 @@ fn qr_subcommand_is_wired_and_no_longer_reports_not_implemented() {
 }
 
 #[test]
-fn parses_remaining_stub_subcommands_and_returns_not_implemented() {
-    let cases: &[(&[&str], &str)] = &[
-        (&["label", "abc"], "label"),
-        (&["label", "abc", "--json"], "label"),
-    ];
-
-    for (args, expected_command) in cases {
-        inv_command()
-            .args(*args)
-            .assert()
-            .failure()
-            .stderr(predicate::str::contains(format!(
-                "command '{expected_command}' is not implemented yet"
-            )));
-    }
+fn label_subcommand_is_wired_and_no_longer_reports_not_implemented() {
+    inv_command()
+        .args(["label", "abc"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains(
+            "invalid item id 'abc' (expected UUID)",
+        ))
+        .stderr(predicate::str::contains("not implemented").not());
 }
 
 #[test]

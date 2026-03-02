@@ -1,11 +1,12 @@
 use std::path::Path;
 
 use crate::cli::Commands;
-use crate::error::{AppError, Result};
+use crate::error::Result;
 
 mod add;
 mod init;
 mod ios_setup;
+mod label;
 mod list;
 mod qr;
 mod remove;
@@ -24,24 +25,8 @@ pub fn run(command: &Commands, db_path: &Path) -> Result<()> {
         Commands::Update { id } => update::run(db_path, id),
         Commands::Remove { id, yes } => remove::run(db_path, id, *yes),
         Commands::Qr { id, out } => qr::run(db_path, id, out.as_deref()),
+        Commands::Label { id, json } => label::run(db_path, id, *json),
         Commands::Validate => validate::run(db_path),
         Commands::IosSetup { url } => ios_setup::run(url.clone()),
-        _ => Err(AppError::NotImplemented(command_name(command))),
-    }
-}
-
-fn command_name(command: &Commands) -> &'static str {
-    match command {
-        Commands::Init => "init",
-        Commands::Add => "add",
-        Commands::Update { .. } => "update",
-        Commands::Search { .. } => "search",
-        Commands::Show { .. } => "show",
-        Commands::List { .. } => "list",
-        Commands::Remove { .. } => "remove",
-        Commands::Qr { .. } => "qr",
-        Commands::Label { .. } => "label",
-        Commands::Validate => "validate",
-        Commands::IosSetup { .. } => "ios-setup",
     }
 }
