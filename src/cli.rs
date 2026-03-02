@@ -5,6 +5,9 @@ use clap::{Parser, Subcommand};
 #[derive(Debug, Parser)]
 #[command(name = "inv", version, about = "Inventory as code CLI")]
 pub struct Cli {
+    #[arg(long, global = true)]
+    pub db_path: Option<PathBuf>,
+
     #[command(subcommand)]
     pub command: Commands,
 }

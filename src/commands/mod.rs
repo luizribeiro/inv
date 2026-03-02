@@ -1,7 +1,9 @@
+use std::path::Path;
+
 use crate::cli::Commands;
 use crate::error::{AppError, Result};
 
-pub fn run(command: &Commands) -> Result<()> {
+pub fn run(command: &Commands, _db_path: &Path) -> Result<()> {
     Err(AppError::NotImplemented(command_name(command)))
 }
 
