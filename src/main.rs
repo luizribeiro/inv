@@ -4,6 +4,7 @@ mod commands;
 mod config;
 mod error;
 mod model;
+mod schema;
 
 use clap::Parser;
 
