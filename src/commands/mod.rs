@@ -5,12 +5,14 @@ use crate::error::{AppError, Result};
 
 mod init;
 mod list;
+mod search;
 mod show;
 mod validate;
 
 pub fn run(command: &Commands, db_path: &Path) -> Result<()> {
     match command {
         Commands::Init => init::run(db_path),
+        Commands::Search { query, json } => search::run(db_path, query, *json),
         Commands::Show { id, json } => show::run(db_path, id, *json),
         Commands::List { json } => list::run(db_path, *json),
         Commands::Validate => validate::run(db_path),

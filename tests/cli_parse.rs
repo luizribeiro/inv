@@ -19,8 +19,6 @@ fn parses_all_subcommands_and_returns_not_implemented() {
     let cases: &[(&[&str], &str)] = &[
         (&["add"], "add"),
         (&["update", "abc"], "update"),
-        (&["search", "resistor"], "search"),
-        (&["search", "resistor", "--json"], "search"),
         (&["remove", "abc", "--yes"], "remove"),
         (&["qr", "abc"], "qr"),
         (&["qr", "abc", "--out", "qr.png"], "qr"),
