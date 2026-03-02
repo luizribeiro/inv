@@ -5,6 +5,10 @@ pub type Result<T> = std::result::Result<T, AppError>;
 #[derive(Debug)]
 pub enum AppError {
     NotImplemented(&'static str),
+    InvalidUrl {
+        source: String,
+        reason: &'static str,
+    },
 }
 
 impl Display for AppError {
@@ -12,6 +16,9 @@ impl Display for AppError {
         match self {
             Self::NotImplemented(command) => {
                 write!(f, "command '{command}' is not implemented yet")
+            }
+            Self::InvalidUrl { source, reason } => {
+                write!(f, "invalid URL '{source}': {reason}")
             }
         }
     }

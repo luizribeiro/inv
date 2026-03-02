@@ -15,6 +15,11 @@ where
 {
     let Cli { db_path, command } = cli;
     let db_path = config::resolve_db_path(db_path);
+
+    if let Commands::IosSetup { url } = &command {
+        let _ = config::resolve_ios_shortcut_url(url.clone())?;
+    }
+
     runner(&command, &db_path)
 }
 
@@ -91,5 +96,23 @@ mod tests {
         .expect("run should succeed with test runner");
 
         assert_eq!(seen_path, Some(PathBuf::from("./inventory.json")));
+    }
+
+    #[test]
+    fn run_rejects_invalid_ios_setup_url() {
+        let _guard = crate::config::env_lock()
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        std::env::remove_var("INV_IOS_SHORTCUT_URL");
+
+        let cli = Cli {
+            db_path: None,
+            command: Commands::IosSetup {
+                url: Some("http://example.com".to_string()),
+            },
+        };
+
+        let error = run_with(cli, |_, _| Ok(())).expect_err("non-https URL must fail");
+        assert!(matches!(error, crate::error::AppError::InvalidUrl { .. }));
     }
 }
