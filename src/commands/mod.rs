@@ -4,10 +4,12 @@ use crate::cli::Commands;
 use crate::error::{AppError, Result};
 
 mod init;
+mod validate;
 
 pub fn run(command: &Commands, db_path: &Path) -> Result<()> {
     match command {
         Commands::Init => init::run(db_path),
+        Commands::Validate => validate::run(db_path),
         _ => Err(AppError::NotImplemented(command_name(command))),
     }
 }

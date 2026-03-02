@@ -30,7 +30,6 @@ fn parses_all_subcommands_and_returns_not_implemented() {
         (&["qr", "abc", "--out", "qr.png"], "qr"),
         (&["label", "abc"], "label"),
         (&["label", "abc", "--json"], "label"),
-        (&["validate"], "validate"),
         (&["ios-setup"], "ios-setup"),
         (&["ios-setup", "--url", "https://example.com"], "ios-setup"),
     ];
