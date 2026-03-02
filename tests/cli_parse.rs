@@ -70,3 +70,12 @@ fn add_help_mentions_stdin_json_flag() {
         .success()
         .stdout(predicate::str::contains("--stdin-json"));
 }
+
+#[test]
+fn update_help_mentions_stdin_json_flag() {
+    inv_command()
+        .args(["update", "--help"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("--stdin-json"));
+}

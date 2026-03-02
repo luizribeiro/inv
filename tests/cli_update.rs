@@ -1,13 +1,13 @@
 use std::fs;
 
-use assert_cmd::assert::OutputAssertExt;
+use assert_cmd::Command;
 use predicates::prelude::*;
 use tempfile::tempdir;
 
 const UPDATE_TEST_INPUT_ENV: &str = "INV_UPDATE_TEST_INPUT";
 
-fn inv_command() -> std::process::Command {
-    std::process::Command::new(env!("CARGO_BIN_EXE_inv"))
+fn inv_command() -> Command {
+    Command::new(env!("CARGO_BIN_EXE_inv"))
 }
 
 fn write_inventory(temp_dir: &tempfile::TempDir, json: &str) {
@@ -107,6 +107,58 @@ fn update_fails_when_test_input_hook_is_invalid_json() {
         .stderr(predicate::str::contains(
             "failed to parse INV_UPDATE_TEST_INPUT",
         ));
+}
+
+#[test]
+fn update_accepts_non_interactive_stdin_json_patch() {
+    let temp = tempdir().expect("tempdir should be created");
+    write_inventory(
+        &temp,
+        "{\n  \"version\": 1,\n  \"items\": [\n    {\n      \"id\": \"11111111-1111-1111-1111-111111111111\",\n      \"name\": \"Resistor pack\",\n      \"quantity\": 4,\n      \"unit\": \"pcs\",\n      \"created_at\": \"2024-01-01T00:00:00Z\",\n      \"updated_at\": \"2024-01-01T00:00:00Z\"\n    }\n  ]\n}\n",
+    );
+
+    inv_command()
+        .current_dir(temp.path())
+        .args([
+            "update",
+            "11111111-1111-1111-1111-111111111111",
+            "--stdin-json",
+        ])
+        .write_stdin(r#"{"quantity":12,"location":"Drawer C"}"#)
+        .assert()
+        .success()
+        .stdout(predicate::str::contains(
+            "Updated item 11111111-1111-1111-1111-111111111111",
+        ));
+
+    let raw = fs::read_to_string(temp.path().join("inventory.json"))
+        .expect("inventory file should be readable after update");
+    let value: serde_json::Value = serde_json::from_str(&raw).expect("inventory should be json");
+
+    let item = &value["items"][0];
+    assert_eq!(item["quantity"], 12);
+    assert_eq!(item["location"], "Drawer C");
+}
+
+#[test]
+fn update_stdin_json_rejects_invalid_json_payload() {
+    let temp = tempdir().expect("tempdir should be created");
+    write_inventory(
+        &temp,
+        "{\n  \"version\": 1,\n  \"items\": [\n    {\n      \"id\": \"11111111-1111-1111-1111-111111111111\",\n      \"name\": \"Resistor pack\"\n    }\n  ]\n}\n",
+    );
+
+    inv_command()
+        .current_dir(temp.path())
+        .args([
+            "update",
+            "11111111-1111-1111-1111-111111111111",
+            "--stdin-json",
+        ])
+        .write_stdin("{not-json")
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("failed to parse stdin JSON input"));
 }
 
 #[test]

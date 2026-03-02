@@ -22,7 +22,7 @@ pub fn run(command: &Commands, db_path: &Path) -> Result<()> {
         Commands::Search { query, json } => search::run(db_path, query, *json),
         Commands::Show { id, json } => show::run(db_path, id, *json),
         Commands::List { json } => list::run(db_path, *json),
-        Commands::Update { id } => update::run(db_path, id),
+        Commands::Update { id, stdin_json } => update::run(db_path, id, *stdin_json),
         Commands::Remove { id, yes } => remove::run(db_path, id, *yes),
         Commands::Qr { id, out } => qr::run(db_path, id, out.as_deref()),
         Commands::Label { id, json } => label::run(db_path, id, *json),

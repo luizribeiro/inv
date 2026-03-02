@@ -39,7 +39,11 @@ struct AddInputData {
 
 pub fn run(db_path: &Path, stdin_json: bool) -> Result<()> {
     let mut doc = crate::storage::load_inventory(db_path)?;
-    let input = collect_input(stdin_json)?;
+    let input = if stdin_json {
+        collect_input_from_stdin()?
+    } else {
+        collect_input_interactive()?
+    };
 
     let item = build_item_from_input(input)?;
     doc.items.push(item.clone());
@@ -52,11 +56,7 @@ pub fn run(db_path: &Path, stdin_json: bool) -> Result<()> {
     Ok(())
 }
 
-fn collect_input(stdin_json: bool) -> Result<AddInputData> {
-    if stdin_json {
-        return collect_input_from_stdin();
-    }
-
+fn collect_input_interactive() -> Result<AddInputData> {
     if let Ok(raw) = std::env::var(ADD_TEST_INPUT_ENV) {
         return serde_json::from_str(&raw).map_err(|error| {
             AppError::Validation(format!(
@@ -326,7 +326,7 @@ mod tests {
             r#"{"name":"Test Item","quantity":2,"tags":["a","b"]}"#,
         );
 
-        let input = collect_input(false).expect("test hook input should parse");
+        let input = collect_input_interactive().expect("test hook input should parse");
 
         assert_eq!(input.name, "Test Item");
         assert_eq!(input.quantity, Some(2));
@@ -356,8 +356,8 @@ mod tests {
             .unwrap_or_else(|poisoned| poisoned.into_inner());
         std::env::set_var(ADD_TEST_INPUT_ENV, r#"{"name":"From env"}"#);
 
-        let input =
-            collect_input(true).expect_err("empty stdin should fail when --stdin-json is set");
+        let input = collect_input_from_stdin()
+            .expect_err("empty stdin should fail when --stdin-json is set");
         assert!(input.to_string().contains("stdin JSON input is empty"));
 
         std::env::remove_var(ADD_TEST_INPUT_ENV);

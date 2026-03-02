@@ -43,7 +43,7 @@ Unknown fields are rejected (`additionalProperties: false`), and semantic valida
 ```text
 inv init
 inv add [--stdin-json]
-inv update <id>
+inv update <id> [--stdin-json]
 inv search <query> [--json]
 inv show <id> [--json]
 inv list [--json]
@@ -57,7 +57,7 @@ inv ios-setup [--url <https-url>]
 Notes:
 
 - `add` is interactive by default; use `--stdin-json` for non-interactive JSON input from stdin.
-- `update` is interactive.
+- `update` is interactive by default; use `--stdin-json` to apply a JSON patch object from stdin.
 - `search` matches only `name` and `description` (case-insensitive).
 - `remove` requires confirmation in non-interactive usage (`--yes`).
 - `label` is a **v1 terminal placeholder** (no printer integration yet).
@@ -66,6 +66,12 @@ Non-interactive add example:
 
 ```bash
 echo '{"name":"Switchcraft Jack","quantity":6,"unit":"pcs"}' | inv add --stdin-json
+```
+
+Non-interactive update example:
+
+```bash
+echo '{"quantity":12,"location":"Drawer C"}' | inv update <uuid> --stdin-json
 ```
 
 ## iOS setup

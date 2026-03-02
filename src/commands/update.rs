@@ -1,3 +1,4 @@
+use std::io::Read;
 use std::path::Path;
 
 use dialoguer::Input;
@@ -25,7 +26,7 @@ struct UpdateInputData {
     notes: Option<Option<String>>,
 }
 
-pub fn run(db_path: &Path, id: &str) -> Result<()> {
+pub fn run(db_path: &Path, id: &str, stdin_json: bool) -> Result<()> {
     let item_id = Uuid::parse_str(id)
         .map_err(|_| AppError::Validation(format!("invalid item id '{id}' (expected UUID)")))?;
 
@@ -36,7 +37,11 @@ pub fn run(db_path: &Path, id: &str) -> Result<()> {
         .position(|candidate| candidate.id == item_id)
         .ok_or_else(|| AppError::Validation(format!("item '{item_id}' not found")))?;
 
-    let input = collect_input(&doc.items[item_index])?;
+    let input = if stdin_json {
+        collect_input_from_stdin()?
+    } else {
+        collect_input_interactive(&doc.items[item_index])?
+    };
     let updated_item = apply_update(&doc.items[item_index], input)?;
 
     doc.items[item_index] = updated_item.clone();
@@ -53,7 +58,7 @@ pub fn run(db_path: &Path, id: &str) -> Result<()> {
     Ok(())
 }
 
-fn collect_input(current: &Item) -> Result<UpdateInputData> {
+fn collect_input_interactive(current: &Item) -> Result<UpdateInputData> {
     if let Ok(raw) = std::env::var(UPDATE_TEST_INPUT_ENV) {
         return parse_update_input_from_json(&raw).map_err(|error| {
             AppError::Validation(format!(
@@ -102,6 +107,22 @@ fn collect_input(current: &Item) -> Result<UpdateInputData> {
         tags: Some(tags),
         notes: Some(notes),
     })
+}
+
+fn collect_input_from_stdin() -> Result<UpdateInputData> {
+    let mut raw = String::new();
+    std::io::stdin().read_to_string(&mut raw).map_err(|error| {
+        AppError::Validation(format!("failed to read stdin JSON input: {error}"))
+    })?;
+
+    if raw.trim().is_empty() {
+        return Err(AppError::Validation(
+            "stdin JSON input is empty; provide a JSON object".to_string(),
+        ));
+    }
+
+    parse_update_input_from_json(&raw)
+        .map_err(|error| AppError::Validation(format!("failed to parse stdin JSON input: {error}")))
 }
 
 fn parse_update_input_from_json(raw: &str) -> std::result::Result<UpdateInputData, String> {
@@ -443,7 +464,7 @@ mod tests {
         );
 
         let current = Item::with_required_fields(Uuid::new_v4(), "Current");
-        let input = collect_input(&current).expect("test hook input should parse");
+        let input = collect_input_interactive(&current).expect("test hook input should parse");
 
         assert_eq!(input.name.as_deref(), Some("Updated"));
         assert_eq!(input.description, Some(None));
@@ -466,5 +487,20 @@ mod tests {
         assert_eq!(updated.quantity, 5);
         assert_eq!(updated.location.as_deref(), Some("Shelf C"));
         assert!(updated.updated_at >= old_updated_at);
+    }
+
+    #[test]
+    fn update_collect_input_prioritizes_stdin_json_over_test_env() {
+        let _guard = crate::config::env_lock()
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        std::env::set_var(UPDATE_TEST_INPUT_ENV, r#"{"name":"From env"}"#);
+
+        let error = collect_input_from_stdin()
+            .expect_err("empty stdin should fail when --stdin-json is set");
+
+        assert!(error.to_string().contains("stdin JSON input is empty"));
+
+        std::env::remove_var(UPDATE_TEST_INPUT_ENV);
     }
 }

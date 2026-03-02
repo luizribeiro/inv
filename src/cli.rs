@@ -21,6 +21,8 @@ pub enum Commands {
     },
     Update {
         id: String,
+        #[arg(long, help = "Read update patch JSON object from stdin")]
+        stdin_json: bool,
     },
     Search {
         query: String,
