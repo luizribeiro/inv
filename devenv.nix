@@ -78,6 +78,14 @@
       pass_filenames = false;
       always_run = true;
     };
+
+    cargo-test = {
+      enable = true;
+      name = "cargo test";
+      entry = "bash -c 'test -f Cargo.toml || exit 0; cargo test'";
+      pass_filenames = false;
+      always_run = true;
+    };
   };
 
   # See full reference at https://devenv.sh/reference/options/
