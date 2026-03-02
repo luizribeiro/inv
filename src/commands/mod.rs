@@ -3,6 +3,7 @@ use std::path::Path;
 use crate::cli::Commands;
 use crate::error::{AppError, Result};
 
+mod add;
 mod init;
 mod list;
 mod search;
@@ -12,6 +13,7 @@ mod validate;
 pub fn run(command: &Commands, db_path: &Path) -> Result<()> {
     match command {
         Commands::Init => init::run(db_path),
+        Commands::Add => add::run(db_path),
         Commands::Search { query, json } => search::run(db_path, query, *json),
         Commands::Show { id, json } => show::run(db_path, id, *json),
         Commands::List { json } => list::run(db_path, *json),
