@@ -16,11 +16,6 @@
     cargo run --quiet -- "$@"
   '';
 
-  enterTest = ''
-    cargo check
-    cargo test
-  '';
-
   git-hooks.hooks = {
     cargo-fmt-check = {
       enable = true;
